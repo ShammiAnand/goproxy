@@ -5,6 +5,7 @@ GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
 BINARY_NAME=goproxy
 BINARY_UNIX=$(BINARY_NAME)_unix
+CONFIG_PATH=./internal/config/config.yaml
 
 MAIN_PACKAGE=./cmd/goproxy
 
@@ -37,7 +38,7 @@ performance-test:
 
 run:
 	$(GOBUILD) -o $(BINARY_NAME) -v $(MAIN_PACKAGE)
-	./$(BINARY_NAME)
+	./$(BINARY_NAME) -config $(CONFIG_PATH)
 
 deps:
 	$(GOGET) -v -d ./...

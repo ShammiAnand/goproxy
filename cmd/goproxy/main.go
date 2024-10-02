@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/shammianand/goproxy/internal/config"
 	"github.com/shammianand/goproxy/internal/proxy"
@@ -21,26 +22,32 @@ func run() error {
 	configPath := flag.String("config", "config.yaml", "path to config file")
 	flag.Parse()
 
-	return RunWithConfig(*configPath)
-}
-
-// RunWithConfig is exported for testing purposes
-func RunWithConfig(configPath string) error {
-	cfg, err := config.Load(configPath)
+	cfg, err := config.Load(*configPath)
 	if err != nil {
 		return err
 	}
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level: cfg.GetLogLevel(),
-	}))
+	logger := slog.New(cfg.GetLogFormat())
 	slog.SetDefault(logger)
 
-	proxy, err := proxy.NewProxy(cfg.TargetAddr, logger)
+	proxy, err := proxy.NewProxy(cfg.Proxy.TargetAddr, logger)
 	if err != nil {
 		return err
 	}
 
-	slog.Info("Starting GoProxy", "listen_addr", cfg.ListenAddr)
-	return http.ListenAndServe(cfg.ListenAddr, proxy)
+	server := &http.Server{
+		Addr:         cfg.Server.ListenAddr,
+		Handler:      proxy,
+		ReadTimeout:  cfg.Server.ReadTimeout * time.Second,
+		WriteTimeout: cfg.Server.WriteTimeout * time.Second,
+		IdleTimeout:  cfg.Server.IdleTimeout * time.Second,
+	}
+
+	slog.Info("Starting GoProxy",
+		"listen_addr", cfg.Server.ListenAddr,
+		"target_addr", cfg.Proxy.TargetAddr,
+		"log_level", cfg.Logging.Level,
+	)
+
+	return server.ListenAndServe()
 }

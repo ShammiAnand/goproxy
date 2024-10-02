@@ -1,0 +1,71 @@
+# GoProxy Configuration
+
+# Server settings
+server:
+  # The address and port the proxy will listen on
+  listen_addr: ":8080"
+  # Read timeout for incoming requests (in seconds)
+  read_timeout: 5
+  # Write timeout for server responses (in seconds)
+  write_timeout: 10
+  # Idle timeout for keep-alive connections (in seconds)
+  idle_timeout: 120
+
+# Proxy settings
+proxy:
+  # The target address to forward requests to
+  target_addr: "http://localhost:8000"
+  # Maximum number of idle connections to the target
+  max_idle_conns: 100
+  # Timeout for establishing a new connection to the target (in seconds)
+  dial_timeout: 10
+
+# Load balancing settings (for future implementation)
+load_balancing:
+  # Enabled flag for load balancing
+  enabled: false
+  # Load balancing algorithm (e.g., "round_robin", "least_connections")
+  algorithm: "round_robin"
+  # List of backend servers (for future use)
+  backends: []
+
+# TLS settings (for future implementation)
+tls:
+  # Enabled flag for TLS
+  enabled: false
+  # Path to the TLS certificate file
+  cert_file: ""
+  # Path to the TLS key file
+  key_file: ""
+
+# Logging settings
+logging:
+  # Log level (debug, info, warn, error)
+  level: "debug"
+  # Log format (text or json)
+  format: "json"
+
+# Metrics settings (for future implementation)
+metrics:
+  # Enabled flag for metrics collection
+  enabled: false
+  # The address to expose Prometheus metrics on
+  address: ":9090"
+
+# Rate limiting settings (for future implementation)
+rate_limiting:
+  # Enabled flag for rate limiting
+  enabled: false
+  # Requests per second limit
+  requests_per_second: 100
+  # Burst size for rate limiting
+  burst: 50
+
+# Caching settings (for future implementation)
+caching:
+  # Enabled flag for response caching
+  enabled: false
+  # Default TTL for cached responses (in seconds)
+  default_ttl: 300
+  # Maximum size of the cache (in megabytes)
+  max_size_mb: 100
