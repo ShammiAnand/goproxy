@@ -1,6 +1,7 @@
 package config
 
 import (
+	"io"
 	"log/slog"
 	"os"
 	"time"
@@ -78,11 +79,36 @@ func (c *Config) GetLogLevel() slog.Level {
 	}
 }
 
-func (c *Config) GetLogFormat() slog.Handler {
+// Helper methods to get durations
+func (c *Config) GetServerReadTimeout() time.Duration {
+	return time.Duration(c.Server.ReadTimeout) * time.Second
+}
+
+func (c *Config) GetServerWriteTimeout() time.Duration {
+	return time.Duration(c.Server.WriteTimeout) * time.Second
+}
+
+func (c *Config) GetServerIdleTimeout() time.Duration {
+	return time.Duration(c.Server.IdleTimeout) * time.Second
+}
+
+func (c *Config) GetProxyDialTimeout() time.Duration {
+	return time.Duration(c.Proxy.DialTimeout) * time.Second
+}
+
+func (c *Config) GetCachingDefaultTTL() time.Duration {
+	return time.Duration(c.Caching.DefaultTTL) * time.Second
+}
+
+func (c *Config) GetLogFormat(w io.Writer) slog.Handler {
+	if w == nil {
+		w = os.Stdout
+	}
+	opts := &slog.HandlerOptions{Level: c.GetLogLevel()}
 	switch c.Logging.Format {
 	case "json":
-		return slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: c.GetLogLevel()})
+		return slog.NewJSONHandler(w, opts)
 	default:
-		return slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: c.GetLogLevel()})
+		return slog.NewTextHandler(w, opts)
 	}
 }

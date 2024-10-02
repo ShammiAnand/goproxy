@@ -27,7 +27,7 @@ func run() error {
 		return err
 	}
 
-	logger := slog.New(cfg.GetLogFormat())
+	logger := slog.New(cfg.GetLogFormat(os.Stdout))
 	slog.SetDefault(logger)
 
 	proxy, err := proxy.NewProxy(cfg.Proxy.TargetAddr, logger)
