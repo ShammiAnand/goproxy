@@ -31,7 +31,7 @@ jobs:
         run: make deps
 
       - name: Build
-        run: make build
+        run: make build-linux
 
       - name: Run unit tests
         run: make unit-test
@@ -41,12 +41,6 @@ jobs:
 
       - name: Run performance tests
         run: make performance-test
-
-      - name: Build Docker image
-        run: make docker-build
-
-      - name: Build for Linux
-        run: make build-linux
 
     # Optional: Add a step to run the application and test it
     # - name: Run application
