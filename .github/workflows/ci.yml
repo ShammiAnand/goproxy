@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.22.1"
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Get dependencies
+        run: make deps
+
+      - name: Build
+        run: make build
+
+      - name: Run unit tests
+        run: make unit-test
+
+      - name: Run integration tests
+        run: make integration-test
+
+      - name: Run performance tests
+        run: make performance-test
+
+      - name: Build Docker image
+        run: make docker-build
+
+      - name: Build for Linux
+        run: make build-linux
+
+    # Optional: Add a step to run the application and test it
+    # - name: Run application
+    #   run: ./goproxy &
+    #   # Add commands to test the running application
+
+    # Optional: Add a step to upload artifacts
+    # - name: Upload artifact
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: goproxy
+    #     path: goproxy
+
+    # Optional: Add steps for code coverage, linting, etc.
+    # - name: Run golangci-lint
+    #   uses: golangci/golangci-lint-action@v3
