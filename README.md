@@ -1,4 +1,3 @@
-```markdown
 # GoProxy 🚀
 
 <p align="center">
@@ -135,29 +134,5 @@ This project is licensed under the BSD 3-Clause License - see the [LICENSE](LICE
 ---
 
 <p align="center">
-  Made with ❤️ by [Your Name/Organization]
+  Made with ❤️ by Shammi Anand
 </p>
-```
-
-This README provides a comprehensive overview of your GoProxy project, including:
-
-1. A brief description and the Go gopher logo
-2. Badges for Go Report Card, GoDoc, and License
-3. Current and planned features
-4. Installation and usage instructions
-5. Configuration overview
-6. Testing information
-7. A roadmap for future development
-8. Contribution guidelines
-9. License information
-10. Acknowledgments
-
-To use this README:
-
-1. Save it as `README.md` in your project's root directory.
-2. Replace `yourusername` with your actual GitHub username.
-3. Update the "Made with ❤️ by" section with your name or organization.
-4. As you implement new features, update the "Current Features" section and move items from "Planned Features".
-5. Create a `docs/configuration.md` file with detailed configuration options and link it in the README.
-
-This README provides a professional and informative introduction to your project, making it attractive to potential users and contributors. As your project evolves, remember to keep the README updated to reflect new features and changes.
