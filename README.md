@@ -1,7 +1,7 @@
 # GoProxy 🚀
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/golang-samples/gopher-vector/master/gopher.png" alt="GoProxy Gopher" width="300"/>
+  <img src="https://raw.githubusercontent.com/golang-samples/gopher-vector/master/gopher.png" alt="GoProxy Gopher" width="50"/>
 </p>
 
 <p align="center">
