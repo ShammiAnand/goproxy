@@ -1,38 +1,98 @@
-release:
-  name: Create Release
-  needs: build
-  if: startsWith(github.ref, 'refs/tags/')
-  runs-on: ubuntu-latest
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+name: CI
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: "1.21"
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
-    - name: Build project
-      run: make build-linux
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
+    steps:
+      - uses: actions/checkout@v3
 
-    - name: Upload Release Asset
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./goproxy
-        asset_name: goproxy
-        asset_content_type: application/octet-stream
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.22.1"
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Get dependencies
+        run: make deps
+
+      - name: Build
+        run: make build-linux
+
+      - name: Run unit tests
+        run: make unit-test
+
+      - name: Run integration tests
+        run: make integration-test
+
+      - name: Run performance tests
+        run: make performance-test
+
+  release:
+    name: Create Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+
+      - name: Build project
+        run: make build-linux
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./goproxy
+          asset_name: goproxy
+          asset_content_type: application/octet-stream
+
+  # Optional: Add a step to run the application and test it
+  # - name: Run application
+  #   run: ./goproxy &
+  #   # Add commands to test the running application
+
+  # Optional: Add a step to upload artifacts
+  # - name: Upload artifact
+  #   uses: actions/upload-artifact@v3
+  #   with:
+  #     name: goproxy
+  #     path: goproxy
+
+  # Optional: Add steps for code coverage, linting, etc.
+  # - name: Run golangci-lint
+  #   uses: golangci/golangci-lint-action@v3
