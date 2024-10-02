@@ -2,18 +2,30 @@ package unit
 
 import (
 	"bytes"
-	"github.com/shammianand/goproxy/internal/proxy"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/shammianand/goproxy/internal/config"
+	"github.com/shammianand/goproxy/internal/proxy"
+	"github.com/shammianand/goproxy/pkg/logger"
 )
 
 func TestProxyLogging(t *testing.T) {
+	// Create a test configuration
+	cfg := &config.Config{}
+	cfg.Logging.Level = "debug"
+	cfg.Logging.Format = "json"
+
 	// Create a buffer to capture log output
 	var logBuffer bytes.Buffer
-	logger := slog.New(slog.NewJSONHandler(&logBuffer, nil))
+	logger := logger.New(cfg)
+
+	// Create a JSON handler writing to the buffer
+	jsonHandler := slog.NewJSONHandler(&logBuffer, &slog.HandlerOptions{Level: slog.LevelDebug})
+	logger.Logger = slog.New(jsonHandler)
 
 	// Create a test server to act as the backend
 	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

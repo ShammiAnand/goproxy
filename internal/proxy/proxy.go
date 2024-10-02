@@ -1,20 +1,21 @@
 package proxy
 
 import (
-	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"time"
+
+	"github.com/shammianand/goproxy/pkg/logger"
 )
 
 type Proxy struct {
 	target *url.URL
 	proxy  *httputil.ReverseProxy
-	logger *slog.Logger
+	logger *logger.Logger
 }
 
-func NewProxy(target string, logger *slog.Logger) (*Proxy, error) {
+func NewProxy(target string, logger *logger.Logger) (*Proxy, error) {
 	targetURL, err := url.Parse(target)
 	if err != nil {
 		return nil, err
@@ -46,7 +47,7 @@ func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	p.proxy.ServeHTTP(w, r)
 }
 
-func logRequest(logger *slog.Logger, r *http.Request) {
+func logRequest(logger *logger.Logger, r *http.Request) {
 	logger.Info("Incoming request",
 		"method", r.Method,
 		"url", r.URL.String(),
@@ -56,7 +57,7 @@ func logRequest(logger *slog.Logger, r *http.Request) {
 }
 
 type loggingRoundTripper struct {
-	logger *slog.Logger
+	logger *logger.Logger
 	next   http.RoundTripper
 }
 

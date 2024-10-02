@@ -9,6 +9,7 @@ import (
 
 	"github.com/shammianand/goproxy/internal/config"
 	"github.com/shammianand/goproxy/internal/proxy"
+	"github.com/shammianand/goproxy/pkg/logger"
 )
 
 func main() {
@@ -27,10 +28,10 @@ func run() error {
 		return err
 	}
 
-	logger := slog.New(cfg.GetLogFormat(os.Stdout))
-	slog.SetDefault(logger)
+	log := logger.New(cfg)
+	log.Info("Starting GoProxy", "config_path", *configPath)
 
-	proxy, err := proxy.NewProxy(cfg.Proxy.TargetAddr, logger)
+	proxy, err := proxy.NewProxy(cfg.Proxy.TargetAddr, log)
 	if err != nil {
 		return err
 	}
@@ -43,7 +44,7 @@ func run() error {
 		IdleTimeout:  cfg.Server.IdleTimeout * time.Second,
 	}
 
-	slog.Info("Starting GoProxy",
+	log.Info("Starting GoProxy",
 		"listen_addr", cfg.Server.ListenAddr,
 		"target_addr", cfg.Proxy.TargetAddr,
 		"log_level", cfg.Logging.Level,

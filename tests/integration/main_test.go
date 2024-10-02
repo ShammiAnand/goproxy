@@ -2,14 +2,16 @@ package integration
 
 import (
 	"bytes"
-	"github.com/shammianand/goproxy/internal/config"
-	"github.com/shammianand/goproxy/internal/proxy"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/shammianand/goproxy/internal/config"
+	"github.com/shammianand/goproxy/internal/proxy"
+	"github.com/shammianand/goproxy/pkg/logger"
 )
 
 func TestMainIntegration(t *testing.T) {
@@ -47,9 +49,18 @@ func TestMainIntegration(t *testing.T) {
 		t.Fatalf("Failed to load config: %v", err)
 	}
 
+	// Create a test configuration
+	cfg = &config.Config{}
+	cfg.Logging.Level = "debug"
+	cfg.Logging.Format = "json"
+
 	// Create a buffer to capture log output
 	var logBuf bytes.Buffer
-	logger := slog.New(cfg.GetLogFormat(&logBuf))
+	logger := logger.New(cfg)
+
+	// Create a JSON handler writing to the buffer
+	jsonHandler := slog.NewJSONHandler(&logBuf, &slog.HandlerOptions{Level: slog.LevelDebug})
+	logger.Logger = slog.New(jsonHandler)
 
 	// Create a test backend server
 	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

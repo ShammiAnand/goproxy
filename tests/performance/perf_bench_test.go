@@ -1,16 +1,29 @@
 package performance
 
 import (
-	"github.com/shammianand/goproxy/internal/proxy"
+	"bytes"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/shammianand/goproxy/internal/config"
+	"github.com/shammianand/goproxy/internal/proxy"
+	"github.com/shammianand/goproxy/pkg/logger"
 )
 
 func BenchmarkProxy(b *testing.B) {
 	// Create a null logger to avoid logging overhead during benchmarking
-	logger := slog.New(slog.NewJSONHandler(nil, &slog.HandlerOptions{Level: slog.LevelError}))
+	// Create a test configuration
+	cfg := &config.Config{}
+	cfg.Logging.Level = "debug"
+	cfg.Logging.Format = "json"
+
+	// Create a buffer to capture log output
+	var logBuffer bytes.Buffer
+	logger := logger.New(cfg)
+	jsonHandler := slog.NewJSONHandler(&logBuffer, &slog.HandlerOptions{Level: slog.LevelDebug})
+	logger.Logger = slog.New(jsonHandler)
 
 	// Create a test backend server
 	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
