@@ -27,8 +27,6 @@ server:
   idle_timeout: 120
 ```
 
-````
-
 - `listen_addr`: The address and port on which GoProxy will listen for incoming requests. Format is `"host:port"`. Use `:port` to listen on all interfaces.
 - `read_timeout`: Maximum duration (in seconds) for reading the entire request, including the body.
 - `write_timeout`: Maximum duration (in seconds) before timing out writes of the response.
@@ -197,7 +195,3 @@ caching:
 ```
 
 Remember to adjust these settings based on your specific requirements and the capabilities of your infrastructure.
-
-```
-
-````
