@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
+  tags:
+    - "v*"
   pull_request:
     branches: [main]
 
@@ -55,13 +57,13 @@ jobs:
   release:
     name: Create Release
     needs: build
-
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # This ensures all tags are fetched
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -79,7 +81,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: ./goproxy
-          tag_name: ${{ steps.get_version.outputs.VERSION }}
           name: Release ${{ steps.get_version.outputs.VERSION }}
           draft: false
           prerelease: false
