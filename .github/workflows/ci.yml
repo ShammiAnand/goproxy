@@ -56,8 +56,6 @@ jobs:
     name: Create Release
     needs: build
 
-    if: github.ref == 'refs/heads/main' #NOTE: This will run on every push to main
-
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
