@@ -42,10 +42,16 @@ jobs:
       - name: Run performance tests
         run: make performance-test
 
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: goproxy
+          path: goproxy
+
   release:
     name: Create Release
     needs: build
-    if: startsWith(github.ref, 'refs/tags/')
+    if: github.ref == 'refs/heads/main' # This will run on every push to main
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -80,19 +86,3 @@ jobs:
           asset_path: ./goproxy
           asset_name: goproxy
           asset_content_type: application/octet-stream
-
-  # Optional: Add a step to run the application and test it
-  # - name: Run application
-  #   run: ./goproxy &
-  #   # Add commands to test the running application
-
-  # Optional: Add a step to upload artifacts
-  # - name: Upload artifact
-  #   uses: actions/upload-artifact@v3
-  #   with:
-  #     name: goproxy
-  #     path: goproxy
-
-  # Optional: Add steps for code coverage, linting, etc.
-  # - name: Run golangci-lint
-  #   uses: golangci/golangci-lint-action@v3
