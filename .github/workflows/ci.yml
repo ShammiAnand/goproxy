@@ -62,16 +62,28 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # This ensures all tags are fetched
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "1.22.1" # NOTE: Make sure this matches the version in your build job
+          go-version: "1.22.1"
+
       - name: Build project
         run: make build-linux
+
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        if: github.ref == 'refs/heads/main' #NOTE: This will run on every push to main
         with:
           files: ./goproxy
+          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          name: Release ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
