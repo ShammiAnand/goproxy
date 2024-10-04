@@ -155,5 +155,5 @@ This project is licensed under the BSD 3-Clause License - see the [LICENSE](LICE
 ---
 
 <p align="center">
-  Made with ❤️ by Shammi Anand
+  Made by Shammi Anand
 </p>
