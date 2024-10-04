@@ -15,6 +15,10 @@
 
 GoProxy is a high-performance, feature-rich reverse proxy written in Go. Designed with extensibility in mind, it aims to provide a robust solution for modern web architectures.
 
+## 📦 Releases
+
+Latest release: [v0.0.5](https://github.com/shammianand/goproxy/releases/tag/v0.0.5)
+
 ## 🌟 Features
 
 ### Feature Roadmap
