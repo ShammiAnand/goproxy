@@ -1,50 +1,104 @@
 package proxy
 
 import (
+	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"time"
 
+	"github.com/shammianand/goproxy/internal/loadbalancer"
 	"github.com/shammianand/goproxy/pkg/logger"
 )
 
 type Proxy struct {
-	target *url.URL
-	proxy  *httputil.ReverseProxy
-	logger *logger.Logger
+	target       *url.URL
+	proxy        *httputil.ReverseProxy
+	logger       *logger.Logger
+	loadBalancer loadbalancer.LoadBalancer
 }
 
-func NewProxy(target string, logger *logger.Logger) (*Proxy, error) {
-	targetURL, err := url.Parse(target)
-	if err != nil {
-		return nil, err
+func NewProxy(target string, lb loadbalancer.LoadBalancer, logger *logger.Logger) (http.Handler, error) {
+	var targetURL *url.URL
+	var err error
+	if target != "" {
+		targetURL, err = url.Parse(target)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(targetURL)
-
-	// Customize the ReverseProxy director
-	originalDirector := proxy.Director
-	proxy.Director = func(req *http.Request) {
-		originalDirector(req)
-		logRequest(logger, req)
+	p := &Proxy{
+		target:       targetURL,
+		loadBalancer: lb,
+		logger:       logger,
 	}
 
-	// Add a custom transport
-	proxy.Transport = &loggingRoundTripper{
-		logger: logger,
-		next:   http.DefaultTransport,
+	if lb == nil && targetURL != nil {
+		p.proxy = httputil.NewSingleHostReverseProxy(targetURL)
+		p.proxy.ErrorLog = slog.NewLogLogger(logger.Handler(), slog.LevelError)
 	}
 
-	return &Proxy{
-		target: targetURL,
-		proxy:  proxy,
-		logger: logger,
-	}, nil
+	return p, nil
 }
 
 func (p *Proxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	p.proxy.ServeHTTP(w, r)
+	var proxyToUse *httputil.ReverseProxy
+	var backendURL *url.URL
+
+	if p.loadBalancer != nil {
+		backend, err := p.loadBalancer.NextBackend()
+		if err != nil {
+			p.logger.Error("Failed to get next backend", "error", err)
+			http.Error(w, "Service Unavailable", http.StatusServiceUnavailable)
+			return
+		}
+		backendURL = backend.URL
+		proxyToUse = httputil.NewSingleHostReverseProxy(backendURL)
+	} else if p.proxy != nil {
+		proxyToUse = p.proxy
+		backendURL = p.target
+	} else {
+		p.logger.Error("No backend or load balancer configured")
+		http.Error(w, "Service Unavailable", http.StatusServiceUnavailable)
+		return
+	}
+
+	proxyToUse.ErrorLog = slog.NewLogLogger(p.logger.Handler(), slog.LevelError)
+
+	// Modify the request to match the backend URL
+	r.URL.Host = backendURL.Host
+	r.URL.Scheme = backendURL.Scheme
+	r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
+	r.Host = backendURL.Host
+
+	// Log the incoming request
+	p.logger.Info("Incoming request",
+		"method", r.Method,
+		"url", r.URL.String(),
+		"backend", backendURL.String(),
+	)
+
+	// Capture the response
+	rw := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+	proxyToUse.ServeHTTP(rw, r)
+
+	// Log the response
+	p.logger.Info("Response received",
+		"status", rw.statusCode,
+		"backend", backendURL.String(),
+	)
+}
+
+// responseWriter is a custom ResponseWriter that captures the status code
+type responseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (rw *responseWriter) WriteHeader(code int) {
+	rw.statusCode = code
+	rw.ResponseWriter.WriteHeader(code)
 }
 
 func logRequest(logger *logger.Logger, r *http.Request) {

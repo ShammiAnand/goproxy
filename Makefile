@@ -12,6 +12,7 @@ MAIN_PACKAGE=./cmd/goproxy
 UNIT_TEST_PATH=./tests/unit/...
 INTEGRATION_TEST_PATH=./tests/integration/...
 PERFORMANCE_TEST_PATH=./tests/performance/...
+SIMULATION_TEST_PATH=./tests/simulation/...
 
 .PHONY: all build clean test run deps help
 
@@ -25,7 +26,7 @@ clean:
 	rm -f $(BINARY_NAME)
 	rm -f $(BINARY_UNIX)
 
-test: unit-test integration-test performance-test
+test: unit-test integration-test
 
 unit-test:
 	$(GOTEST) -v $(UNIT_TEST_PATH)
@@ -35,6 +36,9 @@ integration-test:
 
 performance-test:
 	$(GOTEST) -v -bench=. $(PERFORMANCE_TEST_PATH)
+
+simulation:
+	$(GOTEST) -v $(SIMULATION_TEST_PATH)
 
 run:
 	$(GOBUILD) -o $(BINARY_NAME) -v $(MAIN_PACKAGE)

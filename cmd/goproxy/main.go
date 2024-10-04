@@ -31,7 +31,9 @@ func run() error {
 	log := logger.New(cfg)
 	log.Info("Starting GoProxy", "config_path", *configPath)
 
-	proxy, err := proxy.NewProxy(cfg.Proxy.TargetAddr, log)
+	loadBalancer, err := cfg.CreateLoadBalancer()
+
+	proxy, err := proxy.NewProxy(cfg.Proxy.TargetAddr, loadBalancer, log)
 	if err != nil {
 		return err
 	}

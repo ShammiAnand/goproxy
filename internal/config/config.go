@@ -1,11 +1,14 @@
 package config
 
 import (
+	"fmt"
 	"io"
 	"log/slog"
+	"net/url"
 	"os"
 	"time"
 
+	"github.com/shammianand/goproxy/internal/loadbalancer"
 	"gopkg.in/yaml.v2"
 )
 
@@ -62,6 +65,29 @@ func Load(configPath string) (*Config, error) {
 		return nil, err
 	}
 	return config, nil
+}
+
+// Add this method to the Config struct
+func (c *Config) CreateLoadBalancer() (loadbalancer.LoadBalancer, error) {
+	if !c.LoadBalancing.Enabled {
+		return nil, nil
+	}
+
+	var backends []*loadbalancer.Backend
+	for _, backendURL := range c.LoadBalancing.Backends {
+		u, err := url.Parse(backendURL)
+		if err != nil {
+			return nil, fmt.Errorf("invalid backend URL %s: %w", backendURL, err)
+		}
+		backends = append(backends, &loadbalancer.Backend{URL: u, Healthy: true})
+	}
+
+	switch c.LoadBalancing.Algorithm {
+	case "round_robin":
+		return loadbalancer.NewRoundRobinBalancer(backends), nil
+	default:
+		return nil, fmt.Errorf("unsupported load balancing algorithm: %s", c.LoadBalancing.Algorithm)
+	}
 }
 
 func (c *Config) GetLogLevel() slog.Level {
