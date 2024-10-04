@@ -1,10 +1,9 @@
 # GoProxy 🚀
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/golang-samples/gopher-vector/master/gopher.png" alt="GoProxy Gopher" width="50"/>
-</p>
-
-<p align="center">
+   <a href="#">
+    <img src="https://raw.githubusercontent.com/golang-samples/gopher-vector/master/gopher.png" alt="GoProxy Gopher" width="30"/>
+  </a>
   <a href="https://golang.org/doc/go1.21">
     <img src="https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go" alt="Go Version">
   </a>
