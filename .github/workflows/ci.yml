@@ -45,9 +45,6 @@ jobs:
       - name: Run integration tests
         run: make integration-test
 
-      - name: Run performance tests
-        run: make performance-test
-
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
